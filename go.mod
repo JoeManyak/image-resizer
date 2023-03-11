@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/h2non/bimg v1.1.9
+	github.com/rabbitmq/amqp091-go v1.7.0
 )
 
 require (

@@ -17,7 +17,16 @@ func main() {
 
 	_ = os.Mkdir(filepath, os.ModePerm)
 	photoService := services.NewPhotoService(filepath)
-	photoController := controllers.NewPhotoController(photoService)
+
+	amqpService := services.NewAMQPService("base")
+	err := amqpService.Setup()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	photoController := controllers.NewPhotoController(photoService, amqpService)
+
+	go photoController.ConsumeAndResize()
 
 	r := gin.Default()
 	r.GET("/lifecheck", func(c *gin.Context) {
