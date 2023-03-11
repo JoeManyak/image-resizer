@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"github.com/h2non/bimg"
-	_ "github.com/h2non/bimg"
 	"os"
 )
 
