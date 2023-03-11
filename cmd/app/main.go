@@ -27,11 +27,26 @@ func main() {
 	go photoController.ConsumeAndResize()
 
 	r := gin.Default()
-	r.GET("/lifecheck", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	r.GET("/lifecheck", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	r.POST("/upload", func(c *gin.Context) {
-		photoController.Upload(c)
+
+	r.POST("/upload", func(ctx *gin.Context) {
+		photoController.Upload(ctx)
+	})
+
+	r.GET("/download/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		quality := ctx.DefaultQuery("quality", "100")
+
+		photoController.DownloadFromDisk(ctx, id, quality)
+	})
+
+	r.GET("/image/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		quality := ctx.DefaultQuery("quality", "100")
+
+		photoController.ShowFromDisk(ctx, id, quality)
 	})
 
 	if err := r.Run(); err != nil {
