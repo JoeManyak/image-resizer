@@ -11,8 +11,6 @@ type PhotoService interface {
 	SaveResized(b *bimg.Image, percents, width, height int) error
 	ResizePercentage(b *bimg.Image, width, height, percents int) ([]byte, error)
 	SaveFile(filename string, image []byte) error
-
-	//Send()
 }
 
 func NewPhotoService(path string) PhotoService {

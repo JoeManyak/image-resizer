@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"image-resizer/config"
 	"image-resizer/controllers"
 	"image-resizer/services"
 	"log"
@@ -10,15 +11,12 @@ import (
 )
 
 func main() {
-	filepath := os.Getenv("IMG_PATH")
-	if filepath == "" {
-		filepath = "./img"
-	}
+	config.Setup()
 
-	_ = os.Mkdir(filepath, os.ModePerm)
-	photoService := services.NewPhotoService(filepath)
+	_ = os.Mkdir(config.MainConfig.ImagePath, os.ModePerm)
+	photoService := services.NewPhotoService(config.MainConfig.ImagePath)
 
-	amqpService := services.NewAMQPService("base")
+	amqpService := services.NewAMQPService(config.MainConfig.AMQPConfig.QueueName)
 	err := amqpService.Setup()
 	if err != nil {
 		log.Fatalln(err.Error())

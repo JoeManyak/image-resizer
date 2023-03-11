@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"image-resizer/config"
 )
 
 type AMQPService interface {
@@ -24,7 +25,12 @@ type amqpService struct {
 }
 
 func (a *amqpService) Setup() error {
-	d, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	d, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/",
+		config.MainConfig.AMQPConfig.User,
+		config.MainConfig.AMQPConfig.Pass,
+		config.MainConfig.AMQPConfig.URL,
+		config.MainConfig.AMQPConfig.Port,
+	))
 	if err != nil {
 		return fmt.Errorf("dial to amqp: %w", err)
 	}
