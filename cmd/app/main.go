@@ -4,14 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"image-resizer/controllers"
 	"image-resizer/services"
+	"log"
 	"net/http"
 	"os"
 )
 
 func main() {
-	// todo change to env path
-	os.Mkdir("./img", os.ModePerm)
-	photoService := services.NewPhotoService("./img")
+	filepath := os.Getenv("PATH")
+	if filepath == "" {
+		filepath = "./img"
+	}
+
+	_ = os.Mkdir(filepath, os.ModePerm)
+	photoService := services.NewPhotoService(filepath)
 	photoController := controllers.NewPhotoController(photoService)
 
 	r := gin.Default()
@@ -22,5 +27,7 @@ func main() {
 		photoController.Upload(c)
 	})
 
-	r.Run()
+	if err := r.Run(); err != nil {
+		log.Fatalln(err.Error())
+	}
 }

@@ -59,7 +59,7 @@ func (p *photoService) SaveFilesSequence(b []byte) (int64, error) {
 }
 
 func (p *photoService) SaveResized(b *bimg.Image, percents, width, height int) error {
-	resized, err := p.ResizePercentage(b, percents, width, height)
+	resized, err := p.ResizePercentage(b, width, height, percents)
 	if err != nil {
 		return fmt.Errorf("save resized resizing: %w", err)
 	}
