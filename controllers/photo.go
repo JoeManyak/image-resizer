@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"image-resizer/services"
 	"log"
@@ -23,13 +24,14 @@ func (p *photoController) Upload(ctx *gin.Context) {
 	raw, err := ctx.GetRawData()
 	if err != nil {
 		ctx.Status(http.StatusUnprocessableEntity)
+		log.Println(fmt.Errorf("upload: %w", err))
 		return
 	}
 
-	num, err := p.photoService.SaveFiles(raw)
+	num, err := p.photoService.SaveFilesSequence(raw)
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
-		log.Fatalln(err.Error())
+		log.Println(fmt.Errorf("upload: %w", err))
 		return
 	}
 
