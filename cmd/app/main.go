@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	filepath := os.Getenv("PATH")
+	filepath := os.Getenv("IMG_PATH")
 	if filepath == "" {
 		filepath = "./img"
 	}
