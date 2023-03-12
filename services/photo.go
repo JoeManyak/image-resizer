@@ -3,29 +3,37 @@ package services
 import (
 	"fmt"
 	"github.com/h2non/bimg"
+	"image-resizer/config"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type PhotoService interface {
-	SaveFilesSequence(b []byte) (int64, error)
+	SaveFilesSequence(b []byte) (int, error)
 	SaveResized(b *bimg.Image, percents, width, height int) error
 	ResizePercentage(b *bimg.Image, width, height, percents int) ([]byte, error)
 	SaveFile(filename string, image []byte) error
 }
 
-func NewPhotoService(path string) PhotoService {
-	return &photoService{
-		number: 0,
-		path:   path,
+func NewPhotoService(path string) (PhotoService, error) {
+	initialNumber, err := getInitialNumber()
+	if err != nil {
+		return nil, fmt.Errorf("couldn't initiate photo service: %w", err)
 	}
+
+	return &photoService{
+		number: initialNumber,
+		path:   path,
+	}, nil
 }
 
 type photoService struct {
-	number int64
+	number int
 	path   string
 }
 
-func (p *photoService) SaveFilesSequence(b []byte) (int64, error) {
+func (p *photoService) SaveFilesSequence(b []byte) (int, error) {
 	image := bimg.NewImage(b)
 	p.number++
 
@@ -99,4 +107,25 @@ func (p *photoService) SaveFile(filename string, image []byte) error {
 		return fmt.Errorf("unable to write to file: %w", err)
 	}
 	return nil
+}
+
+func getInitialNumber() (int, error) {
+	dir, err := os.ReadDir(config.MainConfig.ImagePath)
+	if err != nil {
+		return 0, fmt.Errorf("unable to read dir: %w", err)
+	}
+
+	maxNum := 0
+	for i := range dir {
+		num, err := strconv.Atoi(strings.Split(dir[i].Name(), "-")[0])
+		if err != nil {
+			continue
+		}
+
+		if num > maxNum {
+			maxNum = num
+		}
+	}
+
+	return maxNum, nil
 }
