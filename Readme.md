@@ -34,3 +34,7 @@ P.S. You can use quality query for download and preview endpoints to set 25%-50%
 | ` AMQP_URL `   | Specifies RabbitMQ URL             | ` localhost ` |
 | ` AMQP_PORT `  | Specifies RabbitMQ port            | ` 5672 `      |
 
+### Dependencies
+
+Project uses https://github.com/h2non/bimg lib for image resize that requires vips library, to install it use
+```apt-get install -y libvips libvips-dev```
