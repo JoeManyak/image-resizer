@@ -34,6 +34,7 @@ type photoService struct {
 	path   string
 }
 
+// SaveFilesSequence creates 100%, 75%, 50% and 25% quality images into image directory
 func (p *photoService) SaveFilesSequence(b []byte) (int, error) {
 	image := bimg.NewImage(b)
 	p.number++
@@ -66,6 +67,7 @@ func (p *photoService) SaveFilesSequence(b []byte) (int, error) {
 	return p.number, nil
 }
 
+// SaveResized Resizing image and saving it into image directory
 func (p *photoService) SaveResized(b *bimg.Image, percents, width, height int) error {
 	resized, err := p.ResizePercentage(b, width, height, percents)
 	if err != nil {
@@ -80,6 +82,7 @@ func (p *photoService) SaveResized(b *bimg.Image, percents, width, height int) e
 	return nil
 }
 
+// ResizePercentage resizing bimg.Image with provided image width, height and percents to resize
 func (p *photoService) ResizePercentage(b *bimg.Image, width, height, percents int) ([]byte, error) {
 	image, err := b.Resize(
 		(width*percents)/100,
@@ -92,6 +95,7 @@ func (p *photoService) ResizePercentage(b *bimg.Image, width, height, percents i
 	return image, nil
 }
 
+// SaveFile creates empty file by filename and write there provided bytes
 func (p *photoService) SaveFile(filename string, image []byte) error {
 	f, err := os.Create(filename)
 	if err != nil {
@@ -110,6 +114,7 @@ func (p *photoService) SaveFile(filename string, image []byte) error {
 	return nil
 }
 
+// GetFile seeks file from image directory by ID and quality
 func (p *photoService) GetFile(id, quality string) (string, string, error) {
 	filename := fmt.Sprintf("%s-%s.png", id, quality)
 	filePath := fmt.Sprintf("%s/%s", config.MainConfig.ImagePath, filename)
@@ -133,6 +138,7 @@ func (p *photoService) GetFile(id, quality string) (string, string, error) {
 	return filename, filePath, nil
 }
 
+// getInitialNumber looks for highest ID in image directory, to avoid collisions. If directory is empty, returns 0
 func getInitialNumber() (int, error) {
 	dir, err := os.ReadDir(config.MainConfig.ImagePath)
 	if err != nil {

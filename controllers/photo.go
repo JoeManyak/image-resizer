@@ -24,6 +24,7 @@ type photoController struct {
 	amqpService  services.AMQPService
 }
 
+// Upload is used for parsing images and sending it to RabbitMQ
 func (p *photoController) Upload(ctx *gin.Context) {
 	raw, err := ctx.GetRawData()
 	if err != nil {
@@ -42,6 +43,7 @@ func (p *photoController) Upload(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// ConsumeAndResize is listening to consumer channel and resizing all images from there and saving them.
 func (p *photoController) ConsumeAndResize() {
 	consumer, err := p.amqpService.GetConsumer()
 	if err != nil {
@@ -59,6 +61,7 @@ func (p *photoController) ConsumeAndResize() {
 	}
 }
 
+// DownloadFromDisk is used for serving images to download them
 func (p *photoController) DownloadFromDisk(ctx *gin.Context, id, quality string) {
 	filename, filePath, err := p.photoService.GetFile(id, quality)
 	if err != nil {
@@ -73,6 +76,7 @@ func (p *photoController) DownloadFromDisk(ctx *gin.Context, id, quality string)
 	ctx.File(filePath)
 }
 
+// ShowFromDisk is used for serving images to view them
 func (p *photoController) ShowFromDisk(ctx *gin.Context, id, quality string) {
 	_, filePath, err := p.photoService.GetFile(id, quality)
 	if err != nil {

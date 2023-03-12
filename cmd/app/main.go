@@ -13,7 +13,9 @@ import (
 func main() {
 	config.Setup()
 
+	// Should try to create directory for images if it is not exists
 	_ = os.Mkdir(config.MainConfig.ImagePath, os.ModePerm)
+
 	photoService, err := services.NewPhotoService(config.MainConfig.ImagePath)
 	if err != nil {
 		log.Fatalln(err.Error())
