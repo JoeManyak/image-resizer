@@ -14,10 +14,13 @@ func main() {
 	config.Setup()
 
 	_ = os.Mkdir(config.MainConfig.ImagePath, os.ModePerm)
-	photoService := services.NewPhotoService(config.MainConfig.ImagePath)
+	photoService, err := services.NewPhotoService(config.MainConfig.ImagePath)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 
 	amqpService := services.NewAMQPService(config.MainConfig.AMQPConfig.QueueName)
-	err := amqpService.Setup()
+	err = amqpService.Setup()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
