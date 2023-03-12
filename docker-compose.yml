@@ -4,6 +4,10 @@ services:
     build: .
     ports:
       - "8080:8080"
+    depends_on:
+      - rabbitmq
+    environment:
+      - AMQP_PORT=rabbitmq
     container_name: api
   rabbitmq:
     image: rabbitmq:3-management-alpine
