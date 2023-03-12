@@ -27,6 +27,7 @@ P.S. You can use quality query for download and preview endpoints to set 25%-50%
 | Variable       | Description                        | Default       |
 |:---------------|------------------------------------|---------------|
 | ` IMG_PATH `   | Specifies path for image directory | ` ./img `     |
+| ` PORT `       | Specifies application port         | ` 8080 `      |
 | ` AMQP_QUEUE ` | Specifies RabbitMQ queue name      | ` main `      |
 | ` AMQP_QUEUE ` | Specifies RabbitMQ username        | ` guest `     |
 | ` AMQP_QUEUE ` | Specifies RabbitMQ password        | ` guest `     |

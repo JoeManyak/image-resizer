@@ -3,11 +3,9 @@ package controllers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"image-resizer/config"
 	"image-resizer/services"
 	"log"
 	"net/http"
-	"os"
 )
 
 type PhotoController interface {
@@ -62,24 +60,8 @@ func (p *photoController) ConsumeAndResize() {
 }
 
 func (p *photoController) DownloadFromDisk(ctx *gin.Context, id, quality string) {
-	filename := fmt.Sprintf("%s-%s.png", id, quality)
-	filePath := fmt.Sprintf("%s/%s", config.MainConfig.ImagePath, filename)
-
-	dir, err := os.ReadDir(config.MainConfig.ImagePath)
+	filename, filePath, err := p.photoService.GetFile(id, quality)
 	if err != nil {
-		log.Println(err.Error())
-		ctx.Status(http.StatusInternalServerError)
-		return
-	}
-
-	fileFound := false
-	for i := range dir {
-		if dir[i].Name() == filename {
-			fileFound = true
-		}
-	}
-
-	if !fileFound {
 		ctx.Status(http.StatusNotFound)
 		return
 	}
@@ -92,24 +74,8 @@ func (p *photoController) DownloadFromDisk(ctx *gin.Context, id, quality string)
 }
 
 func (p *photoController) ShowFromDisk(ctx *gin.Context, id, quality string) {
-	filename := fmt.Sprintf("%s-%s.png", id, quality)
-	filePath := fmt.Sprintf("%s/%s", config.MainConfig.ImagePath, filename)
-
-	dir, err := os.ReadDir(config.MainConfig.ImagePath)
+	_, filePath, err := p.photoService.GetFile(id, quality)
 	if err != nil {
-		log.Println(err.Error())
-		ctx.Status(http.StatusInternalServerError)
-		return
-	}
-
-	fileFound := false
-	for i := range dir {
-		if dir[i].Name() == filename {
-			fileFound = true
-		}
-	}
-
-	if !fileFound {
 		ctx.Status(http.StatusNotFound)
 		return
 	}

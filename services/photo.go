@@ -14,6 +14,7 @@ type PhotoService interface {
 	SaveResized(b *bimg.Image, percents, width, height int) error
 	ResizePercentage(b *bimg.Image, width, height, percents int) ([]byte, error)
 	SaveFile(filename string, image []byte) error
+	GetFile(id, quality string) (string, string, error)
 }
 
 func NewPhotoService(path string) (PhotoService, error) {
@@ -107,6 +108,29 @@ func (p *photoService) SaveFile(filename string, image []byte) error {
 		return fmt.Errorf("unable to write to file: %w", err)
 	}
 	return nil
+}
+
+func (p *photoService) GetFile(id, quality string) (string, string, error) {
+	filename := fmt.Sprintf("%s-%s.png", id, quality)
+	filePath := fmt.Sprintf("%s/%s", config.MainConfig.ImagePath, filename)
+
+	dir, err := os.ReadDir(config.MainConfig.ImagePath)
+	if err != nil {
+		return "", "", err
+	}
+
+	fileFound := false
+	for i := range dir {
+		if dir[i].Name() == filename {
+			fileFound = true
+		}
+	}
+
+	if !fileFound {
+		return "", "", err
+	}
+
+	return filename, filePath, nil
 }
 
 func getInitialNumber() (int, error) {
