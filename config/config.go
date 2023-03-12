@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 var MainConfig AppConfig
 
@@ -10,6 +13,8 @@ type AppConfig struct {
 }
 
 type AMQPConfig struct {
+	Retries   int
+	Timeout   int
 	QueueName string
 	User      string
 	Pass      string
@@ -26,6 +31,8 @@ func Setup() {
 			Pass:      GetWithDefault(AMQPPass, "guest"),
 			URL:       GetWithDefault(AMQPUrl, "localhost"),
 			Port:      GetWithDefault(AMQPPort, "5672"),
+			Retries:   GetWithDefaultNumber(AMQPRetries, 5),
+			Timeout:   GetWithDefaultNumber(AMQPTimeout, 3),
 		},
 	}
 }
@@ -33,6 +40,17 @@ func Setup() {
 func GetWithDefault(key, defaultVal string) string {
 	if str := os.Getenv(key); str != "" {
 		return str
+	}
+	return defaultVal
+}
+
+func GetWithDefaultNumber(key string, defaultVal int) int {
+	if str := os.Getenv(key); str != "" {
+		val, err := strconv.Atoi(str)
+		if err != nil {
+			return defaultVal
+		}
+		return val
 	}
 	return defaultVal
 }

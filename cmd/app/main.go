@@ -22,10 +22,7 @@ func main() {
 	}
 
 	amqpService := services.NewAMQPService(config.MainConfig.AMQPConfig.QueueName)
-	err = amqpService.Setup()
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+	amqpService.SetupWithRetries()
 
 	photoController := controllers.NewPhotoController(photoService, amqpService)
 

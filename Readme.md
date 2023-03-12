@@ -24,15 +24,17 @@ P.S. You can use quality query for download and preview endpoints to set 25%-50%
 
 ### Environmental variables
 
-| Variable       | Description                        | Default       |
-|:---------------|------------------------------------|---------------|
-| ` IMG_PATH `   | Specifies path for image directory | ` ./img `     |
-| ` PORT `       | Specifies application port         | ` 8080 `      |
-| ` AMQP_QUEUE ` | Specifies RabbitMQ queue name      | ` main `      |
-| ` AMQP_QUEUE ` | Specifies RabbitMQ username        | ` guest `     |
-| ` AMQP_QUEUE ` | Specifies RabbitMQ password        | ` guest `     |
-| ` AMQP_URL `   | Specifies RabbitMQ URL             | ` localhost ` |
-| ` AMQP_PORT `  | Specifies RabbitMQ port            | ` 5672 `      |
+| Variable         | Description                                                     | Default       |
+|:-----------------|-----------------------------------------------------------------|---------------|
+| ` IMG_PATH `     | Specifies path for image directory                              | ` ./img `     |
+| ` PORT `         | Specifies application port                                      | ` 8080 `      |
+| ` AMQP_QUEUE `   | Specifies RabbitMQ queue name                                   | ` main `      |
+| ` AMQP_USER `    | Specifies RabbitMQ username                                     | ` guest `     |
+| ` AMQP_PASS `    | Specifies RabbitMQ password                                     | ` guest `     |
+| ` AMQP_URL `     | Specifies RabbitMQ URL                                          | ` localhost ` |
+| ` AMQP_PORT `    | Specifies RabbitMQ port                                         | ` 5672 `      |
+| ` AMQP_RETRIES ` | Specifies RabbitMQ retries during connection                    | ` 5 `         |
+| ` AMQP_TIMEOUT ` | Specifies RabbitMQ retry timeout (in seconds) during connection | ` 3 `         |
 
 ### Dependencies
 

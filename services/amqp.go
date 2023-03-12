@@ -5,9 +5,12 @@ import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"image-resizer/config"
+	"log"
+	"time"
 )
 
 type AMQPService interface {
+	SetupWithRetries()
 	Setup() error
 	Send(ctx context.Context, data []byte) error
 	GetConsumer() (<-chan amqp.Delivery, error)
@@ -22,6 +25,24 @@ func NewAMQPService(queueName string) AMQPService {
 type amqpService struct {
 	queueName string
 	channel   *amqp.Channel
+}
+
+func (a *amqpService) SetupWithRetries() {
+	for i := 0; i < config.MainConfig.AMQPConfig.Retries; i++ {
+		log.Printf("Attempting to connect RabbitMQ #[%d]\n", i+1)
+		err := a.Setup()
+		if err != nil {
+			if i < config.MainConfig.AMQPConfig.Retries-1 {
+				time.Sleep(time.Second * time.Duration(config.MainConfig.AMQPConfig.Timeout))
+				continue
+			}
+			log.Fatalln(fmt.Errorf("unable to connect RabbitMQ after %d retries: %w",
+				config.MainConfig.AMQPConfig.Retries, err))
+			return
+		}
+		log.Println("Successfully connected to RabbitMQ")
+		break
+	}
 }
 
 func (a *amqpService) Setup() error {

@@ -7,7 +7,7 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      - AMQP_PORT=rabbitmq
+      - AMQP_URL=rabbitmq
     container_name: api
   rabbitmq:
     image: rabbitmq:3-management-alpine
