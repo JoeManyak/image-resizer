@@ -3,21 +3,27 @@ package controllers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"image-resizer/config"
 	"image-resizer/services"
 	"log"
 	"net/http"
+	"os"
 )
 
 type PhotoController interface {
 	Upload(ctx *gin.Context)
+	ConsumeAndResize()
+	DownloadFromDisk(ctx *gin.Context, id, quality string)
+	ShowFromDisk(ctx *gin.Context, id, quality string)
 }
 
-func NewPhotoController(service services.PhotoService) PhotoController {
-	return &photoController{service}
+func NewPhotoController(photoService services.PhotoService, amqpService services.AMQPService) PhotoController {
+	return &photoController{photoService, amqpService}
 }
 
 type photoController struct {
 	photoService services.PhotoService
+	amqpService  services.AMQPService
 }
 
 func (p *photoController) Upload(ctx *gin.Context) {
@@ -28,14 +34,85 @@ func (p *photoController) Upload(ctx *gin.Context) {
 		return
 	}
 
-	num, err := p.photoService.SaveFilesSequence(raw)
+	err = p.amqpService.Send(ctx, raw)
 	if err != nil {
-		ctx.Status(http.StatusInternalServerError)
+		ctx.Status(http.StatusUnprocessableEntity)
 		log.Println(fmt.Errorf("upload: %w", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"id": num,
-	})
+	ctx.Status(http.StatusOK)
+}
+
+func (p *photoController) ConsumeAndResize() {
+	consumer, err := p.amqpService.GetConsumer()
+	if err != nil {
+		return
+	}
+
+	for msg := range consumer {
+		num, err := p.photoService.SaveFilesSequence(msg.Body)
+		if err != nil {
+			log.Printf("Failed to create sequence with ID=%d, error [%s]\n", num, err.Error())
+			continue
+		}
+
+		log.Printf("Created sequence with ID=%d\n", num)
+	}
+}
+
+func (p *photoController) DownloadFromDisk(ctx *gin.Context, id, quality string) {
+	filename := fmt.Sprintf("%s-%s.png", id, quality)
+	filePath := fmt.Sprintf("%s/%s", config.MainConfig.ImagePath, filename)
+
+	dir, err := os.ReadDir(config.MainConfig.ImagePath)
+	if err != nil {
+		log.Println(err.Error())
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	fileFound := false
+	for i := range dir {
+		if dir[i].Name() == filename {
+			fileFound = true
+		}
+	}
+
+	if !fileFound {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+
+	ctx.Writer.Header().Set("Content-Type", "multipart/form-data")
+	ctx.Writer.Header().Set("Content-Disposition",
+		fmt.Sprintf("attachment; filename= %s", filename),
+	)
+	ctx.File(filePath)
+}
+
+func (p *photoController) ShowFromDisk(ctx *gin.Context, id, quality string) {
+	filename := fmt.Sprintf("%s-%s.png", id, quality)
+	filePath := fmt.Sprintf("%s/%s", config.MainConfig.ImagePath, filename)
+
+	dir, err := os.ReadDir(config.MainConfig.ImagePath)
+	if err != nil {
+		log.Println(err.Error())
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	fileFound := false
+	for i := range dir {
+		if dir[i].Name() == filename {
+			fileFound = true
+		}
+	}
+
+	if !fileFound {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+
+	ctx.File(filePath)
 }

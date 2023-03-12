@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"image-resizer/config"
 	"image-resizer/controllers"
 	"image-resizer/services"
 	"log"
@@ -10,21 +11,42 @@ import (
 )
 
 func main() {
-	filepath := os.Getenv("IMG_PATH")
-	if filepath == "" {
-		filepath = "./img"
+	config.Setup()
+
+	_ = os.Mkdir(config.MainConfig.ImagePath, os.ModePerm)
+	photoService := services.NewPhotoService(config.MainConfig.ImagePath)
+
+	amqpService := services.NewAMQPService(config.MainConfig.AMQPConfig.QueueName)
+	err := amqpService.Setup()
+	if err != nil {
+		log.Fatalln(err.Error())
 	}
 
-	_ = os.Mkdir(filepath, os.ModePerm)
-	photoService := services.NewPhotoService(filepath)
-	photoController := controllers.NewPhotoController(photoService)
+	photoController := controllers.NewPhotoController(photoService, amqpService)
+
+	go photoController.ConsumeAndResize()
 
 	r := gin.Default()
-	r.GET("/lifecheck", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	r.GET("/lifecheck", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	r.POST("/upload", func(c *gin.Context) {
-		photoController.Upload(c)
+
+	r.POST("/upload", func(ctx *gin.Context) {
+		photoController.Upload(ctx)
+	})
+
+	r.GET("/download/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		quality := ctx.DefaultQuery("quality", "100")
+
+		photoController.DownloadFromDisk(ctx, id, quality)
+	})
+
+	r.GET("/image/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		quality := ctx.DefaultQuery("quality", "100")
+
+		photoController.ShowFromDisk(ctx, id, quality)
 	})
 
 	if err := r.Run(); err != nil {
